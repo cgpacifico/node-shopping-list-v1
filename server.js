@@ -25,8 +25,44 @@ app.get('/shopping-list', (req, res) => {
   res.json(ShoppingList.get());
 });
 
+app.post('/shopping-list', jsonParser, (req, res) => {
+  // ensure `name` and `budget` are in request body
+  const requiredFields = ['name', 'budget'];
+  for (let i = 0; i < requiredFields.length; i++) {
+    const field = requiredFields[i];
+    if (!(field in req.body)) {
+      const message = `Missing \`${field}\` in request body`
+      console.error(message);
+      return res.status(400).send(message);
+    }
+  }
+
+  const item = ShoppingList.create(req.body.name, req.body.budget);
+  res.status(201).json(item);
+});
+
 app.get('/recipes', (req, res) => {
   res.json(Recipes.get());
+})
+
+app.post('/recipes', jsonParser, (req, res) => {
+  const requiredFields = ['name', 'ingredients'];
+  for (let i = 0; i < requiredFields.length; i++) {
+    const field = requiredFields[i];
+    if (!field in req.body) {
+      const message = `Missing \`${field}\` in request body`
+      console.error(message);
+      return res.status(400).send(message);
+    }
+    if (!(req.body["ingredients"] instanceof Array)) {
+      const message = `Field \`ingredients\' must be an array of strings`
+      console.error(message);
+      return res.status(400).send(message);
+    }
+  }
+
+  const item = Recipes.create(req.body.name, req.body.ingredients);
+  res.status(201).json(item);
 })
 
 app.listen(process.env.PORT || 8888, () => {
